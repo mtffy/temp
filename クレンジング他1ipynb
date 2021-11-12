@@ -1,0 +1,1389 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "クレンジング他.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "mount_file_id": "15iHvc-YrZ2qtVZ3__m07zOrA9mpeh5Yw",
+      "authorship_tag": "ABX9TyNFcGrmeXUdL754NVxYY2AR",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/mtffy/temp/blob/main/%E3%82%AF%E3%83%AC%E3%83%B3%E3%82%B8%E3%83%B3%E3%82%B0%E4%BB%961ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "JPm_WTbsUJaa"
+      },
+      "source": [
+        "# 参考サイト\n",
+        "- https://betashort-lab.com/%E8%87%AA%E7%84%B6%E8%A8%80%E8%AA%9E%E5%87%A6%E7%90%86/python-nltk%E3%82%92%E4%BD%BF%E3%81%A3%E3%81%9F%E8%8B%B1%E5%8D%98%E8%AA%9E%E3%81%AE%E8%AA%9E%E5%B9%B9%E6%8A%BD%E5%87%BA/\n",
+        "- http://www.f.waseda.jp/yusukekondo/TALLWINTER/TALLWINTER101.html"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Yht4RM7mIwOc",
+        "outputId": "2379ef9a-2d94-4629-979a-952fb230e8ba"
+      },
+      "source": [
+        "!pip install nltk"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: nltk in /usr/local/lib/python3.7/dist-packages (3.2.5)\n",
+            "Requirement already satisfied: six in /usr/local/lib/python3.7/dist-packages (from nltk) (1.15.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "IRyCyz1hH9gF"
+      },
+      "source": [
+        "import os\n",
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "import nltk\n",
+        "nltk.download('all')"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "A0hsgbSgNb0Y"
+      },
+      "source": [
+        "train = pd.read_csv(\"/content/drive/MyDrive/python/2021_NTTD_AIcom/data/training.tsv\", sep=\"\\t\")"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 204
+        },
+        "id": "-v4uzH8sNkXF",
+        "outputId": "edb8975d-7b6e-4e9f-d950-f2d515e8a83f"
+      },
+      "source": [
+        "train.head()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>sid</th>\n",
+              "      <th>sentence</th>\n",
+              "      <th>html_id</th>\n",
+              "      <th>label</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>tr-01-0000</td>\n",
+              "      <td>PART I</td>\n",
+              "      <td>Form10k_01</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>tr-01-0001</td>\n",
+              "      <td>The “Business” section and other parts of this...</td>\n",
+              "      <td>Form10k_01</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>tr-01-0002</td>\n",
+              "      <td>Statements that are not historical facts, inc...</td>\n",
+              "      <td>Form10k_01</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>tr-01-0003</td>\n",
+              "      <td>Our actual results may differ materially from...</td>\n",
+              "      <td>Form10k_01</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>tr-01-0004</td>\n",
+              "      <td>Factors that could cause such differences inc...</td>\n",
+              "      <td>Form10k_01</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "          sid  ... label\n",
+              "0  tr-01-0000  ...     0\n",
+              "1  tr-01-0001  ...     0\n",
+              "2  tr-01-0002  ...     0\n",
+              "3  tr-01-0003  ...     0\n",
+              "4  tr-01-0004  ...     0\n",
+              "\n",
+              "[5 rows x 4 columns]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 13
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "jtcYz-HINQQD"
+      },
+      "source": [
+        "# 分かち書きテスト"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "QCjMLYA6I4jg",
+        "outputId": "6dc18d91-c98e-4a9a-f8eb-280dcd401628"
+      },
+      "source": [
+        "s = \"The objective here is conceptualise a methodology to define a better data analytics and motivate fellow employees to participate and learn along.\"\n",
+        "morph = nltk.word_tokenize(s)\n",
+        "print(morph)\n",
+        "\n",
+        "ss = train['sentence'].tolist()\n",
+        "for s in ss:\n",
+        "    morph = nltk.word_tokenize(s)\n",
+        "    print(morph)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "['The', 'objective', 'here', 'is', 'conceptualise', 'a', 'methodology', 'to', 'define', 'a', 'better', 'data', 'analytics', 'and', 'motivate', 'fellow', 'employees', 'to', 'participate', 'and', 'learn', 'along', '.']\n",
+            "['PART', 'I']\n",
+            "['The', '“', 'Business', '”', 'section', 'and', 'other', 'parts', 'of', 'this', 'Form', '10-K', 'contain', 'forward-looking', 'statements', 'that', 'involve', 'inherent', 'risks', 'and', 'uncertainties', '.']\n",
+            "['Statements', 'that', 'are', 'not', 'historical', 'facts', ',', 'including', 'statements', 'about', 'our', 'beliefs', 'and', 'expectations', ',', 'and', 'containing', 'words', 'such', 'as', '“', 'believes', ',', '”', '“', 'estimates', ',', '”', '“', 'anticipates', ',', '”', '“', 'expects', '”', 'or', 'similar', 'words', 'are', 'forward-looking', 'statements', '.']\n",
+            "['Our', 'actual', 'results', 'may', 'differ', 'materially', 'from', 'the', 'projected', 'results', 'discussed', 'in', 'the', 'forward-looking', 'statements', '.']\n",
+            "['Factors', 'that', 'could', 'cause', 'such', 'differences', 'include', ',', 'but', 'are', 'not', 'limited', 'to', ',', 'those', 'discussed', 'in', '“', 'Item', '1A', '.', 'Risk', 'Factors', '”', 'and', 'in', 'the', '“', 'Forward-Looking', 'Statements', '–', 'Cautionary', 'Language', '”', 'in', '“', 'Part', 'II', '–', 'Item', '7', '.']\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "9MvPTXT0OOgV"
+      },
+      "source": [
+        "# 単語ごとの品詞"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "XLlBs3ISKL0Q",
+        "outputId": "084e8694-4890-4c66-fbd5-e4669fa8b725"
+      },
+      "source": [
+        "pos = nltk.pos_tag(morph)\n",
+        "print(pos)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[('Factors', 'NNS'), ('that', 'WDT'), ('could', 'MD'), ('cause', 'VB'), ('such', 'JJ'), ('differences', 'NNS'), ('include', 'VBP'), (',', ','), ('but', 'CC'), ('are', 'VBP'), ('not', 'RB'), ('limited', 'VBN'), ('to', 'TO'), (',', ','), ('those', 'DT'), ('discussed', 'VBN'), ('in', 'IN'), ('“', 'NNP'), ('Item', 'NNP'), ('1A', 'CD'), ('.', '.'), ('Risk', 'NN'), ('Factors', 'NNS'), ('”', 'VBP'), ('and', 'CC'), ('in', 'IN'), ('the', 'DT'), ('“', 'JJ'), ('Forward-Looking', 'JJ'), ('Statements', 'NNS'), ('–', 'VBP'), ('Cautionary', 'JJ'), ('Language', 'NNP'), ('”', 'NN'), ('in', 'IN'), ('“', 'NNP'), ('Part', 'NNP'), ('II', 'NNP'), ('–', 'NNP'), ('Item', 'NNP'), ('7', 'CD'), ('.', '.')]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 1000
+        },
+        "id": "yH720DV_Skvm",
+        "outputId": "d5713e60-31e8-44e6-e11a-48137a02026d"
+      },
+      "source": [
+        "word, hinshi = zip(*pos)\n",
+        "hinshi\n",
+        "df = pd.DataFrame({'word' : word, 'hinshi': hinshi})\n",
+        "df"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>word</th>\n",
+              "      <th>hinshi</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>Factors</td>\n",
+              "      <td>NNS</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>that</td>\n",
+              "      <td>WDT</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>could</td>\n",
+              "      <td>MD</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>cause</td>\n",
+              "      <td>VB</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>such</td>\n",
+              "      <td>JJ</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>5</th>\n",
+              "      <td>differences</td>\n",
+              "      <td>NNS</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>6</th>\n",
+              "      <td>include</td>\n",
+              "      <td>VBP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>7</th>\n",
+              "      <td>,</td>\n",
+              "      <td>,</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>8</th>\n",
+              "      <td>but</td>\n",
+              "      <td>CC</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>9</th>\n",
+              "      <td>are</td>\n",
+              "      <td>VBP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>10</th>\n",
+              "      <td>not</td>\n",
+              "      <td>RB</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>11</th>\n",
+              "      <td>limited</td>\n",
+              "      <td>VBN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>12</th>\n",
+              "      <td>to</td>\n",
+              "      <td>TO</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>13</th>\n",
+              "      <td>,</td>\n",
+              "      <td>,</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>14</th>\n",
+              "      <td>those</td>\n",
+              "      <td>DT</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>15</th>\n",
+              "      <td>discussed</td>\n",
+              "      <td>VBN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>16</th>\n",
+              "      <td>in</td>\n",
+              "      <td>IN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>17</th>\n",
+              "      <td>“</td>\n",
+              "      <td>NNP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>18</th>\n",
+              "      <td>Item</td>\n",
+              "      <td>NNP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>19</th>\n",
+              "      <td>1A</td>\n",
+              "      <td>CD</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>20</th>\n",
+              "      <td>.</td>\n",
+              "      <td>.</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>21</th>\n",
+              "      <td>Risk</td>\n",
+              "      <td>NN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>22</th>\n",
+              "      <td>Factors</td>\n",
+              "      <td>NNS</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>23</th>\n",
+              "      <td>”</td>\n",
+              "      <td>VBP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>24</th>\n",
+              "      <td>and</td>\n",
+              "      <td>CC</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>25</th>\n",
+              "      <td>in</td>\n",
+              "      <td>IN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>26</th>\n",
+              "      <td>the</td>\n",
+              "      <td>DT</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>27</th>\n",
+              "      <td>“</td>\n",
+              "      <td>JJ</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>28</th>\n",
+              "      <td>Forward-Looking</td>\n",
+              "      <td>JJ</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>29</th>\n",
+              "      <td>Statements</td>\n",
+              "      <td>NNS</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>30</th>\n",
+              "      <td>–</td>\n",
+              "      <td>VBP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>31</th>\n",
+              "      <td>Cautionary</td>\n",
+              "      <td>JJ</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>32</th>\n",
+              "      <td>Language</td>\n",
+              "      <td>NNP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>33</th>\n",
+              "      <td>”</td>\n",
+              "      <td>NN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>34</th>\n",
+              "      <td>in</td>\n",
+              "      <td>IN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>35</th>\n",
+              "      <td>“</td>\n",
+              "      <td>NNP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>36</th>\n",
+              "      <td>Part</td>\n",
+              "      <td>NNP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>37</th>\n",
+              "      <td>II</td>\n",
+              "      <td>NNP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>38</th>\n",
+              "      <td>–</td>\n",
+              "      <td>NNP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>39</th>\n",
+              "      <td>Item</td>\n",
+              "      <td>NNP</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>40</th>\n",
+              "      <td>7</td>\n",
+              "      <td>CD</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>41</th>\n",
+              "      <td>.</td>\n",
+              "      <td>.</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "               word hinshi\n",
+              "0           Factors    NNS\n",
+              "1              that    WDT\n",
+              "2             could     MD\n",
+              "3             cause     VB\n",
+              "4              such     JJ\n",
+              "5       differences    NNS\n",
+              "6           include    VBP\n",
+              "7                 ,      ,\n",
+              "8               but     CC\n",
+              "9               are    VBP\n",
+              "10              not     RB\n",
+              "11          limited    VBN\n",
+              "12               to     TO\n",
+              "13                ,      ,\n",
+              "14            those     DT\n",
+              "15        discussed    VBN\n",
+              "16               in     IN\n",
+              "17                “    NNP\n",
+              "18             Item    NNP\n",
+              "19               1A     CD\n",
+              "20                .      .\n",
+              "21             Risk     NN\n",
+              "22          Factors    NNS\n",
+              "23                ”    VBP\n",
+              "24              and     CC\n",
+              "25               in     IN\n",
+              "26              the     DT\n",
+              "27                “     JJ\n",
+              "28  Forward-Looking     JJ\n",
+              "29       Statements    NNS\n",
+              "30                –    VBP\n",
+              "31       Cautionary     JJ\n",
+              "32         Language    NNP\n",
+              "33                ”     NN\n",
+              "34               in     IN\n",
+              "35                “    NNP\n",
+              "36             Part    NNP\n",
+              "37               II    NNP\n",
+              "38                –    NNP\n",
+              "39             Item    NNP\n",
+              "40                7     CD\n",
+              "41                .      ."
+            ]
+          },
+          "metadata": {},
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "4P7kzzGWOHDS"
+      },
+      "source": [
+        "# 動詞を原型にする(語幹化)\n",
+        "\n"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "top8xEL1Rw6X",
+        "outputId": "493944b9-f39e-4e73-8fb3-2c8595104945"
+      },
+      "source": [
+        "from nltk.stem import PorterStemmer\n",
+        "\n",
+        "ps = PorterStemmer()\n",
+        "  \n",
+        "for w in morph:\n",
+        "    print(w, \" : \", ps.stem(w))"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Factors  :  factor\n",
+            "that  :  that\n",
+            "could  :  could\n",
+            "cause  :  caus\n",
+            "such  :  such\n",
+            "differences  :  differ\n",
+            "include  :  includ\n",
+            ",  :  ,\n",
+            "but  :  but\n",
+            "are  :  are\n",
+            "not  :  not\n",
+            "limited  :  limit\n",
+            "to  :  to\n",
+            ",  :  ,\n",
+            "those  :  those\n",
+            "discussed  :  discuss\n",
+            "in  :  in\n",
+            "“  :  “\n",
+            "Item  :  item\n",
+            "1A  :  1A\n",
+            ".  :  .\n",
+            "Risk  :  risk\n",
+            "Factors  :  factor\n",
+            "”  :  ”\n",
+            "and  :  and\n",
+            "in  :  in\n",
+            "the  :  the\n",
+            "“  :  “\n",
+            "Forward-Looking  :  forward-look\n",
+            "Statements  :  statement\n",
+            "–  :  –\n",
+            "Cautionary  :  cautionari\n",
+            "Language  :  languag\n",
+            "”  :  ”\n",
+            "in  :  in\n",
+            "“  :  “\n",
+            "Part  :  part\n",
+            "II  :  II\n",
+            "–  :  –\n",
+            "Item  :  item\n",
+            "7  :  7\n",
+            ".  :  .\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "257-s1YDSD4a",
+        "outputId": "98174f53-cbcb-4465-b56e-66f9c9e13cae"
+      },
+      "source": [
+        "porter = PorterStemmer()\n",
+        "# NLP = [porter.stem(word) for word in morph]\n",
+        "[porter.stem(word) for word in morph]"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['factor',\n",
+              " 'that',\n",
+              " 'could',\n",
+              " 'caus',\n",
+              " 'such',\n",
+              " 'differ',\n",
+              " 'includ',\n",
+              " ',',\n",
+              " 'but',\n",
+              " 'are',\n",
+              " 'not',\n",
+              " 'limit',\n",
+              " 'to',\n",
+              " ',',\n",
+              " 'those',\n",
+              " 'discuss',\n",
+              " 'in',\n",
+              " '“',\n",
+              " 'item',\n",
+              " '1A',\n",
+              " '.',\n",
+              " 'risk',\n",
+              " 'factor',\n",
+              " '”',\n",
+              " 'and',\n",
+              " 'in',\n",
+              " 'the',\n",
+              " '“',\n",
+              " 'forward-look',\n",
+              " 'statement',\n",
+              " '–',\n",
+              " 'cautionari',\n",
+              " 'languag',\n",
+              " '”',\n",
+              " 'in',\n",
+              " '“',\n",
+              " 'part',\n",
+              " 'II',\n",
+              " '–',\n",
+              " 'item',\n",
+              " '7',\n",
+              " '.']"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 25
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "h9Yg3dk7q9wv"
+      },
+      "source": [
+        "# 目的変数ごと、頻出用語を出力する。（上位20個）"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "p_A7RZyhblxa",
+        "outputId": "1fceb0d4-3592-473b-cf1d-6cffa6622f7c"
+      },
+      "source": [
+        "train.columns"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Index(['sid', 'sentence', 'html_id', 'label'], dtype='object')"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 15
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "fxMhm889bxyV",
+        "outputId": "b639ef65-4759-4ea1-86dc-9d7ec84d18f0"
+      },
+      "source": [
+        "train['label'].value_counts()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0    63015\n",
+              "3     2270\n",
+              "2      487\n",
+              "1      191\n",
+              "Name: label, dtype: int64"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 16
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "iVupCJXycGm_"
+      },
+      "source": [
+        "0: Other\n",
+        "1: Green\n",
+        "2: Environmental\n",
+        "3: Social"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "J_RTSdOnbpQI"
+      },
+      "source": [
+        "green_df = train.query('label == 1')"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "04dTPv9dcRQL"
+      },
+      "source": [
+        "def wakachi(raw):\n",
+        "    list = []\n",
+        "    \n",
+        "    ss = raw['sentence'].tolist()\n",
+        "    for s in ss:\n",
+        "        NLP = nltk.word_tokenize(s)\n",
+        "        list = list + NLP\n",
+        "    \n",
+        "    return list"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 204
+        },
+        "id": "YQ5zVWYzdi1b",
+        "outputId": "94e49970-dadc-4be4-d259-3c0526949f5a"
+      },
+      "source": [
+        "temp = green_df.iloc[:5,:]\n",
+        "temp"
+      ],
+      "execution_count": 34,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>sid</th>\n",
+              "      <th>sentence</th>\n",
+              "      <th>html_id</th>\n",
+              "      <th>label</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>859</th>\n",
+              "      <td>tr-01-0859</td>\n",
+              "      <td>Additionally, the impact of climate change ha...</td>\n",
+              "      <td>Form10k_01</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>13433</th>\n",
+              "      <td>tr-12-0428</td>\n",
+              "      <td>For instance, the EPA adopted final rules esta...</td>\n",
+              "      <td>Form10k_12</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>13434</th>\n",
+              "      <td>tr-12-0429</td>\n",
+              "      <td>Although the new source performance standards ...</td>\n",
+              "      <td>Form10k_12</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>13435</th>\n",
+              "      <td>tr-12-0430</td>\n",
+              "      <td>As a result,</td>\n",
+              "      <td>Form10k_12</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>13436</th>\n",
+              "      <td>tr-12-0431</td>\n",
+              "      <td>the D.C. Circuit has stayed the rescission of ...</td>\n",
+              "      <td>Form10k_12</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "              sid  ... label\n",
+              "859    tr-01-0859  ...     1\n",
+              "13433  tr-12-0428  ...     1\n",
+              "13434  tr-12-0429  ...     1\n",
+              "13435  tr-12-0430  ...     1\n",
+              "13436  tr-12-0431  ...     1\n",
+              "\n",
+              "[5 rows x 4 columns]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 34
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "n_BnTYA5dzBx"
+      },
+      "source": [
+        "NLP = wakachi(temp)"
+      ],
+      "execution_count": 35,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "BsCbopVPeRDR"
+      },
+      "source": [
+        "NLP"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "CBEvhjSxfSV0",
+        "outputId": "c1798f53-463e-49f6-fa15-5a9a73860551"
+      },
+      "source": [
+        "pos = nltk.pos_tag(NLP)\n",
+        "print(pos)"
+      ],
+      "execution_count": 36,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[('Additionally', 'RB'), (',', ','), ('the', 'DT'), ('impact', 'NN'), ('of', 'IN'), ('climate', 'NN'), ('change', 'NN'), ('has', 'VBZ'), ('caused', 'VBN'), (',', ','), ('and', 'CC'), ('may', 'MD'), ('continue', 'VB'), ('to', 'TO'), ('cause', 'VB'), (',', ','), ('changes', 'NNS'), ('in', 'IN'), ('weather', 'NN'), ('patterns', 'NNS'), (',', ','), ('resulting', 'VBG'), ('in', 'IN'), ('more', 'RBR'), ('severe', 'JJ'), ('and', 'CC'), ('more', 'RBR'), ('frequent', 'JJ'), ('natural', 'JJ'), ('disasters', 'NNS'), ('such', 'JJ'), ('as', 'IN'), ('forest', 'JJS'), ('fires', 'NNS'), (',', ','), ('hurricanes', 'NNS'), (',', ','), ('tornados', 'NN'), (',', ','), ('floods', 'NNS'), ('and', 'CC'), ('storm', 'NN'), ('surges', 'NNS'), ('.', '.'), ('For', 'IN'), ('instance', 'NN'), (',', ','), ('the', 'DT'), ('EPA', 'NNP'), ('adopted', 'VBD'), ('final', 'JJ'), ('rules', 'NNS'), ('establishing', 'VBG'), ('new', 'JJ'), ('source', 'NN'), ('performance', 'NN'), ('standards', 'NNS'), ('for', 'IN'), ('methane', 'NN'), ('emissions', 'NNS'), ('from', 'IN'), ('new', 'JJ'), (',', ','), ('modified', 'VBN'), (',', ','), ('or', 'CC'), ('reconstructed', 'VBN'), ('oil', 'NN'), ('and', 'CC'), ('gas', 'NN'), ('sources', 'NNS'), ('in', 'IN'), ('2016', 'CD'), ('.', '.'), ('Although', 'IN'), ('the', 'DT'), ('new', 'JJ'), ('source', 'NN'), ('performance', 'NN'), ('standards', 'NNS'), ('were', 'VBD'), ('rescinded', 'VBN'), ('in', 'IN'), ('September', 'NNP'), ('2020', 'CD'), (',', ','), ('states', 'NNS'), (',', ','), ('municipalities', 'NNS'), (',', ','), ('and', 'CC'), ('environmental', 'JJ'), ('groups', 'NNS'), ('are', 'VBP'), ('all', 'DT'), ('challenging', 'VBG'), ('the', 'DT'), ('action', 'NN'), ('in', 'IN'), ('the', 'DT'), ('D.C', 'NNP'), ('.', '.'), ('Circuit', 'NNP'), ('.', '.'), ('As', 'IN'), ('a', 'DT'), ('result', 'NN'), (',', ','), ('the', 'DT'), ('D.C', 'NNP'), ('.', '.'), ('Circuit', 'NNP'), ('has', 'VBZ'), ('stayed', 'VBN'), ('the', 'DT'), ('rescission', 'NN'), ('of', 'IN'), ('the', 'DT'), ('standards', 'NNS'), ('.', '.')]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "VuNGeilwfei5",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 419
+        },
+        "outputId": "d183db91-1972-484b-85b4-16f003160eba"
+      },
+      "source": [
+        "word, hinshi = zip(*pos)\n",
+        "hinshi\n",
+        "temp = pd.DataFrame({'word' : word, 'hinshi': hinshi})\n",
+        "temp"
+      ],
+      "execution_count": 37,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>word</th>\n",
+              "      <th>hinshi</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>Additionally</td>\n",
+              "      <td>RB</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>,</td>\n",
+              "      <td>,</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>the</td>\n",
+              "      <td>DT</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>impact</td>\n",
+              "      <td>NN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>of</td>\n",
+              "      <td>IN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>...</th>\n",
+              "      <td>...</td>\n",
+              "      <td>...</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>115</th>\n",
+              "      <td>rescission</td>\n",
+              "      <td>NN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>116</th>\n",
+              "      <td>of</td>\n",
+              "      <td>IN</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>117</th>\n",
+              "      <td>the</td>\n",
+              "      <td>DT</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>118</th>\n",
+              "      <td>standards</td>\n",
+              "      <td>NNS</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>119</th>\n",
+              "      <td>.</td>\n",
+              "      <td>.</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "<p>120 rows × 2 columns</p>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "             word hinshi\n",
+              "0    Additionally     RB\n",
+              "1               ,      ,\n",
+              "2             the     DT\n",
+              "3          impact     NN\n",
+              "4              of     IN\n",
+              "..            ...    ...\n",
+              "115    rescission     NN\n",
+              "116            of     IN\n",
+              "117           the     DT\n",
+              "118     standards    NNS\n",
+              "119             .      .\n",
+              "\n",
+              "[120 rows x 2 columns]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 37
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "AQawaddafsgd"
+      },
+      "source": [
+        "大まかに次のように分けてみました。\n",
+        "\n",
+        "　　①名詞系（NN、NNS、NNP、NNPS）\n",
+        "\n",
+        "　　②動詞系（VB、VBD、VBG、VBN、VBP、VBZ）\n",
+        "\n",
+        "　　③形容詞系（JJ、JJR、JJS）\n",
+        "\n",
+        "　　④副詞系（RB、RBR、RBS）\n",
+        "\n",
+        "　　⑤疑問詞系（WDT、WP、WP$、WRB）\n",
+        "\n",
+        "　　⑥その他（接続詞など）"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "yZOFlSgmkJ9-",
+        "outputId": "cf4bf009-f4d8-42fb-c4f9-6efef141681c"
+      },
+      "source": [
+        "temp['hinshi'].value_counts()"
+      ],
+      "execution_count": 41,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "NN     17\n",
+              "NNS    16\n",
+              ",      14\n",
+              "IN     13\n",
+              "DT     10\n",
+              "JJ      9\n",
+              "NNP     6\n",
+              ".       6\n",
+              "CC      6\n",
+              "VBN     5\n",
+              "VBG     3\n",
+              "RBR     2\n",
+              "VBD     2\n",
+              "VB      2\n",
+              "VBZ     2\n",
+              "CD      2\n",
+              "JJS     1\n",
+              "MD      1\n",
+              "RB      1\n",
+              "TO      1\n",
+              "VBP     1\n",
+              "Name: hinshi, dtype: int64"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 41
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "bCe4dutGh_6u"
+      },
+      "source": [
+        "doshi = ['VB','VBD','VBG','VBN''VBP','VBZ']\n",
+        "vb = temp.query('hinshi in @doshi')\n"
+      ],
+      "execution_count": 42,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "rxIi4KQMimCE"
+      },
+      "source": [
+        "from nltk.stem import WordNetLemmatizer"
+      ],
+      "execution_count": 44,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "qIRHF7bvjQ6f",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "67d337a4-3b22-4c39-989a-2147c3aebd0f"
+      },
+      "source": [
+        "words = vb['word'].tolist()\n",
+        "lemmatizer = WordNetLemmatizer()\n",
+        "list = []\n",
+        "for w in words:\n",
+        "    a = lemmatizer.lemmatize(w, pos=\"v\")\n",
+        "    list.append(a)\n",
+        "\n",
+        "print(list)"
+      ],
+      "execution_count": 46,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "['have', 'continue', 'cause', 'result', 'adopt', 'establish', 'be', 'challenge', 'have']\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "25HZ4vSkknfn",
+        "outputId": "4fd32a8b-edc1-423c-a079-75ffb1869337"
+      },
+      "source": [
+        "vb['word']"
+      ],
+      "execution_count": 47,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "7               has\n",
+              "12         continue\n",
+              "14            cause\n",
+              "21        resulting\n",
+              "49          adopted\n",
+              "52     establishing\n",
+              "80             were\n",
+              "95      challenging\n",
+              "112             has\n",
+              "Name: word, dtype: object"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 47
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "tqgDOh3PlZvr"
+      },
+      "source": [
+        "def Lem(word):\n",
+        "    a = lemmatizer.lemmatize(w, pos=\"v\")"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 35
+        },
+        "id": "iy4U0zD8mKcm",
+        "outputId": "6066f944-ea7c-4c9e-eced-b9bb13215b0d"
+      },
+      "source": [
+        "train['sentence']"
+      ],
+      "execution_count": 48,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            },
+            "text/plain": [
+              "'PART I'"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 48
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "c39ZLhCSmS3C"
+      },
+      "source": [
+        "import nltk\n",
+        "import re\n",
+        "  \n",
+        "NLP = \"Natural language processing (NLP) is a subfield of linguistics, computer science, information engineering, and artificial intelligence concerned with the interactions between computers and human (natural) languages, in particular how to program computers to process and analyze large amounts of natural language data.\"\n",
+        "  \n",
+        "#===== クリーニング =====\n",
+        "def clearn(text):\n",
+        "    text = re.sub(r',', '', text)\n",
+        "    text = re.sub(r'\\.', '', text)\n",
+        "    text = re.sub(r'\\(.*?\\)', '', text)\n",
+        "    return text\n",
+        "  \n",
+        "NLP = clearn(NLP)\n",
+        "  \n",
+        "#===== トークン化 =====\n",
+        "from nltk.tokenize import word_tokenize\n",
+        "NLP = word_tokenize(NLP)\n",
+        "  \n",
+        "#===== ストップワード =====\n",
+        "from nltk.corpus import stopwords\n",
+        "#nltk.download('stopwords')\n",
+        "  \n",
+        "stop_words = stopwords.words('english')\n",
+        "NLP = [word for word in NLP if word not in stop_words]\n",
+        " \n",
+        "#=====　語幹の抽出 =====\n",
+        "from nltk.stem.porter import PorterStemmer\n",
+        " \n",
+        "porter = PorterStemmer()\n",
+        "NLP = [porter.stem(word) for word in NLP]"
+      ],
+      "execution_count": 49,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 311
+        },
+        "id": "8N-2lR-ZnEIz",
+        "outputId": "7b448791-8762-45fc-e207-b3f97ae9d2a8"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": 50,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "TypeError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mTypeError\u001b[0m                                 Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-50-da4237111abf>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mclearn\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mNLP\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;32m<ipython-input-49-7083857a36bf>\u001b[0m in \u001b[0;36mclearn\u001b[0;34m(text)\u001b[0m\n\u001b[1;32m      6\u001b[0m \u001b[0;31m#===== クリーニング =====\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      7\u001b[0m \u001b[0;32mdef\u001b[0m \u001b[0mclearn\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mtext\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 8\u001b[0;31m     \u001b[0mtext\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mre\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msub\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34mr','\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m''\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtext\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      9\u001b[0m     \u001b[0mtext\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mre\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msub\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34mr'\\.'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m''\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtext\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     10\u001b[0m     \u001b[0mtext\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mre\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msub\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34mr'\\(.*?\\)'\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m''\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mtext\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/lib/python3.7/re.py\u001b[0m in \u001b[0;36msub\u001b[0;34m(pattern, repl, string, count, flags)\u001b[0m\n\u001b[1;32m    192\u001b[0m     \u001b[0ma\u001b[0m \u001b[0mcallable\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mit\u001b[0m\u001b[0;31m'\u001b[0m\u001b[0ms\u001b[0m \u001b[0mpassed\u001b[0m \u001b[0mthe\u001b[0m \u001b[0mMatch\u001b[0m \u001b[0mobject\u001b[0m \u001b[0;32mand\u001b[0m \u001b[0mmust\u001b[0m \u001b[0;32mreturn\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    193\u001b[0m     a replacement string to be used.\"\"\"\n\u001b[0;32m--> 194\u001b[0;31m     \u001b[0;32mreturn\u001b[0m \u001b[0m_compile\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpattern\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mflags\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msub\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mrepl\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mstring\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcount\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    195\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    196\u001b[0m \u001b[0;32mdef\u001b[0m \u001b[0msubn\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mpattern\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mrepl\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mstring\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcount\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mflags\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m0\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mTypeError\u001b[0m: expected string or bytes-like object"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "6HYupcNnnJte"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
